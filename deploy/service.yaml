@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: esmtpfa
+  labels:
+    app: esmtpfa
+spec:
+  type: ClusterIP
+  selector:
+    app: esmtpfa
+  ports:
+    - protocol: TCP
+      port: 25
+      targetPort: 25
+      name: smtp
+    - protocol: TCP
+      port: 465
+      targetPort: 465
+      name: smtp-tls
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      name: http
+    # uncomment below if you want to expose metrics
+    # - protocol: TCP
+    #   port: 9090
+    #   targetPort: 9090
+    #   name: metrics

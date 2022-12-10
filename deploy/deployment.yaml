@@ -1,0 +1,66 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: esmtpfa
+  labels:
+    app: esmtpfa
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: esmtpfa
+  template:
+    metadata:
+      labels:
+        app: esmtpfa
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: esmtpfa
+        image: registry.lestak.sh/esmtpfa:latest
+        envFrom:
+        - secretRef:
+            name: esmtpfa
+        ports:
+          - containerPort: 25
+            name: smtp
+            protocol: TCP
+          - containerPort: 465
+            name: smtp-tls
+            protocol: TCP
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 9090
+            name: metrics
+            protocol: TCP
+        livenessProbe:
+          httpGet:
+            port: 9090
+            path: /status
+        readinessProbe:
+          httpGet:
+            port: 9090
+            path: /status
+        volumeMounts:
+          - mountPath: /etc/esmtpfa/config.yaml
+            name: esmtpfa-providers
+            subPath: config.yaml
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+      volumes:
+        - name: esmtpfa-providers
+          configMap:
+            name: esmtpfa-providers
+    
